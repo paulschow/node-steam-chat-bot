@@ -466,13 +466,13 @@ myBot.addTriggers([
             delay: 1000 } },
 
     // Query Wolfram Alpha when a message starts with !wolfram
-    {    name: 'WolframReply',
+/*    {    name: 'WolframReply',
         type: 'WolframAlphaTrigger',
         options: {
             command: '!wolfram',
 	    ignore: ignoredUser,
-            appId: 'P3T2YW-XVXY4Y7PKA' } },
-
+            appId: 'XXXXXXXXXXXXXX' } },
+*/
 /*    // Post all links from chat to tumblr, and also post things on command
     {    name: 'TumblrTriggerYCJGTFO', type: 'TumblrTrigger',
         options: { autoPost: true, autoPostContext: false, blogName: 'ycjgtfo',
