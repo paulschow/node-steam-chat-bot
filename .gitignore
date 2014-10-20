@@ -1,8 +1,12 @@
 node_modules/
+logs/
+autopaul.js
 todo.txt
 servers
 autojoin
 bot.*
 sentry.*
+sentryfile.*
 test.js
 .ntvs_analysis.dat
+nohup.out
