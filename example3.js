@@ -1,17 +1,17 @@
 #!/bin/nodejs -
 function $(arg){ return arg; }
 
-var ChatBot = require('steam-chat-bot').ChatBot;
+var ChatBot = require('node-steam-chat-bot').ChatBot;
 
 var adminUser = ['76561197985524650','76561198006646114','76561197995578587','76561198005312221','76561198026108296'];   // this is an example of a user that's allowed to use commands nobody else can; see how it's used below.
 //var adminUser = ['76561198006646114'];   // this is an example of a user that's allowed to use commands nobody else can; see how it's used below.
-var ignoredUser = ['76561198021653348','76561198015027919']; // this is an example of a user that's not allowed to use commands everyone else can; see how it's used below.
+var ignoredUser = ['76561198015027919', '76561197988399268']; // this is an example of a user that's not allowed to use commands everyone else can; see how it's used below.
 var ignoredChat = '47598124341';       // rooms:[] works exactly the same as users: [], only it specifies which groupchats a command may be used in
 var allowedChat = '978255';            // ignored: [] allows steamid64s for both groupchats and users. If a user's steamid64 matches, he can't use the command; same if the groupchat it's posted in matches.
 
 // This will log in a steam user with the specified username and password
 var myBot = new ChatBot('username', 'password', {
-    //guardCode: 'XXXXX',
+    //guardCode: 'XXXX',
     logFile: true,        //set to true to log to bot.$username.log, or define a custom logfile. Set to false if you don't want to log to file.
     autoReconnect: true,    //automatically reconnect to the server
     autojoinFile: 'bot.autopaul.autojoin',
@@ -40,11 +40,19 @@ myBot.addTriggers([
             matches: ['!unmute', '!unpause','wake up, bot','bot, wake up','wake up bot','bot wake up'],
             exact: true,
 	    users: adminUser,
-	     //users: ['76561197985524650', '76561198006646114'],
             ignore: ignoredUser,
             callback: function(bot) { bot.unmute(); }
         }
     },
+
+    {
+ name: 'SetStatusTrigger',
+    type: 'SetStatusTrigger',
+    options: { 
+	users: adminUser
+	} 
+	},
+
     // Reply triggers that will only respond to a particular user
     {    name: 'SingleUserReply',
         type: 'ChatReplyTrigger',
@@ -53,8 +61,6 @@ myBot.addTriggers([
             responses: ['hi boss!'],
             exact: true,
             users: adminUser } },
-	    //users: ['76561197985524650', '76561198006646114'] } },
-	    //users: [adminUser] } },
 
     { name: 'KickTrigger',
          type: 'KickTrigger',
@@ -87,7 +93,7 @@ myBot.addTriggers([
         exact: true, probability: 1, timeout: 1000 } },
     { name: 'BugsCmd',   type: 'ChatReplyTrigger', options: {
         matches: ['!bug','!bugs','!issue','!feature'],
-        responses: ['You can submit bugs and feature requests at http://github.com/Efreak/node-steam-chat-bot/issues'],
+        responses: ['You can submit bugs and feature requests at https://github.com/paulschow/node-steam-chat-bot/issues'],
         exact: true, probability: 1, timeout: 1000 } },
     { name: 'OwnerCmd',  type: 'ChatReplyTrigger', options: {
         matches: ['!owner'],
@@ -95,7 +101,12 @@ myBot.addTriggers([
         exact: true, probability: 1, timeout: 1000 } },
     { name: 'SourceCmd', type: 'ChatReplyTrigger', options: {
         matches: ['!source','!about'],
-        responses: ['This bot is based on node-steam-chat-bot, a wrapper around node-steam, which is a nodejs port of SteamKit2. You can find full source code and some documentation and examples at http://github.com/Efreak/node-steam-chat-bot'],
+        responses: ['This bot is based on node-steam-chat-bot, a wrapper around node-steam, which is a nodejs port of SteamKit2. You can find full source code and some documentation and examples at http://github.com/paulschow/node-steam-chat-bot'],
+        exact: true, probability: 1, timeout: 1000 } },
+
+    { name: 'StatsCmd', type: 'ChatReplyTrigger', options: {
+        matches: ['!stats'],
+        responses: ['You can view some statistics at https://data.sparkfun.com/autopaul and a graph of that data at http://imp.guru/f2p'],
         exact: true, probability: 1, timeout: 1000 } },
 
     // Automatically accept invites from any user to the specified group chat. I have reports that this may not currently work.
@@ -111,6 +122,7 @@ myBot.addTriggers([
 
 /*
     // Search Google and respond with the top result whenever someone types !g <query>
+	//Amazingly, if someone googles "fuck you" it crashes the bot
     {
         name: 'Google',
         type: 'GoogleTrigger',
@@ -135,23 +147,22 @@ myBot.addTriggers([
     },
 */
 
+	// Lets people rename the bot every 30 minutes
     { name: 'A_RenameTrigger', type: 'SetNameTrigger',      
 	options: { 
 	matches: ['!name'],
 	exact: true,
 	ignore: ignoredUser,
-	//users: [adminUser] 
 	timeout: 30*60*1000
-	
 	} },
+
+	//Admins can reame the bot whenever
     { name: 'AdminRenameTrigger', type: 'SetNameTrigger',      
 	options: { 
 	matches: ['!name'],
 	exact: true,
 	ignore: ignoredUser,
 	users: adminUser,
-	//timeout: 30*60*1000
-	
 	} },
 /*
     { name: 'GameTrigger', type: 'playGameTrigger',      
@@ -177,7 +188,7 @@ myBot.addTriggers([
             exact: true,
             delay: 1,
             ignore: ignoredUser,
-            probability: 1,
+            probability: 0.1,
             timeout: 30000 } },
     {    name: 'DReply', type: 'ChatReplyTrigger',
         options: {
@@ -186,19 +197,9 @@ myBot.addTriggers([
             exact: true,
             delay: 1,
             ignore: ignoredUser,
-            probability: 1,
+            probability: 0.1,
             timeout: 30000 } },
-/*
-    {    name: 'FunReply', type: 'ChatReplyTrigger',
-        options: {
-            matches: ['!dice','!roll','!image','!google'],
-            responses: ['http://i.imgur.com/KtTnXH1.jpg'],
-            exact: false,
-            delay: 1,
-            ignore: ignoredUser,
-            probability: 1,
-            timeout: 30000 } },
-*/
+
     {    name: 'PingReply', type: 'ChatReplyTrigger',
         options: {
             matches: ['ping'],
@@ -208,14 +209,7 @@ myBot.addTriggers([
             probability: 1,
             timeout: 30000 ,
             ignore: ignoredUser } },
-/*    {    name: 'HealReply', type: 'ChatReplyTrigger',
-        options: {
-            matches: ['heal','health','heal me',"i'm hurt","Im hurt",'im hurt','Im hurt'],
-            responses: [':medicon:',':health:',':medkit:',':medpack:'],
-            delay: 1000,
-            probability: 25,
-            timeout: 2*60*60*1000 } },
-*/
+
     {    name: 'HeartReply', type: 'ChatReplyTrigger',
         options: {
             matches: ['<3'],
@@ -224,22 +218,7 @@ myBot.addTriggers([
             probability: 1,
 	    ignore: ignoredUser,
             timeout: 5*1000 } },
-/*
-    {    name: 'SmileReply', type: 'ChatReplyTrigger',
-        options: {
-            matches: ['☺',':)','(:'],
-            responses: ['☹'],
-            delay: 500,
-            probability: 1,
-            timeout: 60*1000 } },
-    {    name: 'FrownReply', type: 'ChatReplyTrigger',
-        options: {
-            matches: ['☹',':(','):'],
-            responses: ['☺'],
-            delay: 500,
-            probability: 1,
-            timeout: 3000 } },
-*/
+
     {    name: 'RandomEmoticonReply', type: 'ChatReplyTrigger',
         options: {
             matches: ['!emote','!emoticon'],
@@ -249,24 +228,16 @@ myBot.addTriggers([
             probability: 1,
 	    ignore: ignoredUser,
             timeout: 10*1000 } },
-/*
-    {    name: 'GrinReply', type: 'ChatReplyTrigger',
-        options: {
-            matches: [':D','ːDː'],
-            responses: [':D:'],
-            delay: 500,
-            probability: 1,
-            timeout: 60*1000 } },
-*/
+
     {    name: 'ThanksReply', type: 'ChatReplyTrigger',
         options: {
             matches: ['thanks','thx'],
             responses: ['yw','you\'re welcome','any time'],
 	    exact: false,
             delay: 500,
-            probability: 1,
+            probability: 0.01,
 	    ignore: ignoredUser,
-            timeout: 60*1000 } },
+            timeout: 5*60*1000 } },
     {    name: 'FedoraReply', type: 'ChatReplyTrigger',
         options: {
             matches: ['m\'lady','milady','mlady'],
@@ -367,11 +338,10 @@ myBot.addTriggers([
         type: 'ButtBotTrigger',
         options: {
             replacement: 'butt',
-            //probability: 0.008,
-	    probability: 0.01,
+	    probability: 0.001,
             delay: 500,
 	    ignore: ignoredUser,
-            timeout: 40*60*1000 } },
+            timeout: 100*60*1000 } },
 
     {    name: 'Z_ButtReply',
         type: 'ChatReplyTrigger',
@@ -383,38 +353,40 @@ myBot.addTriggers([
 	    ignore: ignoredUser,
             delay: 800 } },
 
+    {    name: 'NightReply',
+        type: 'ChatReplyTrigger',
+        options: {
+            matches: ['Night Bot'],
+            responses: ['Goodnight'],
+	    exact: true,
+            probability: 1,
+            timeout: 10*1000,
+	    ignore: ignoredUser,
+            delay: 800 } },
+
 	// Rem bot, picks two random words and puts them in the format of "I'll X your Y"
     {     name: 'Z_RemBot',
         type: 'RemBotTrigger',
         options: {
-            probability: 0.01,
+            probability: 0.001,
 	    //probability: 1,
             delay: 500,
 	    ignore: ignoredUser,
-            timeout: 60*60*1000 } },
+            timeout: 4*60*60*1000 } },
 	    //timeout: 10*1000 } },
+
+	// meme bot, picks a random word and puts > in front of it"
+    {     name: 'Z_MemeBot',
+        type: 'MemeBotTrigger',
+        options: {
+            //probability: 1,
+	    probability: 0.05,
+            delay: 500,
+	    ignore: ignoredUser,
+	    timeout: 10*60*1000 } },
 
     // Chat reply that doesn't need a particular message to trigger, just a random reply about
     // once every 100 messages (and no more than once an hour)
-/*
-    {    name: 'DeusExReply',
-        type: 'ChatReplyTrigger',
-        options: {
-            matches: [],
-            responses: ['I now have full access to your systems.', 'The Illuminati\'s objective is to govern the world. Do not be deceived.', 'What are you looking for?', 'A corpse. Yes. You feel something. I must know what you are feeling.', 'The checks and balances of democratic governments were invented because humans themselves realized how unfit they were to govern themselves. They needed a system, yes. An industrial age machine.','We are Daedalus. We are Icarus. The barriers between us have fallen and we have become our own shadows. We can be more if we join...with you.','Observe your motivations for breaking the arbitrary laws of the current government.','I was made to assist you.','I am a prototype of a much larger system.','The need to be observed and understood was once satisfied by God. Now we can implement same functionality with data-mining algorithms.','You will soon have your God, and you will make it with your own hands.','"If there were no god, it would be necessary to invent him." - Voltaire'],
-            delay: 1000,
-            probability: 0.006,
-            timeout: 30*60*1000 } },
-
-    {    name: 'RandomReply',
-        type: 'ChatReplyTrigger',
-        options: {
-            matches: [],
-            responses: ['ლ(ಠ益ಠლ)', 'щ(ﾟДﾟщ)', 'omg', '(ﾉಥ益ಥ)ﾉ', '¯\\_(ツ)_/¯',' ( ͡° ͜ʖ ͡°)','(╯°□°）╯︵ ┻━┻)','┬─┬ノ( º _ ºノ)',' (ノಠ益ಠ)ノ彡┻━┻','ಠ_ಠ',' ಠ_ರೃ','ಥ_ಥ','⊙▃⊙'],
-            delay: 1000,
-            probability: 0.005,
-            timeout: 15*60*1000 } },
-*/
 
     {    name: 'QuotesReply',
         type: 'ChatReplyTrigger',
@@ -424,7 +396,7 @@ myBot.addTriggers([
             delay: 1000,
             probability: 0.005,
 	    ignore: ignoredUser,
-            timeout: 120*60*1000 } },
+            timeout: 2*140*60*1000 } },
 
     // Cleverbot reply that only happens when the word "cleverbot" is mentioned
     {    name: 'DirectCleverbotReply',
@@ -466,13 +438,13 @@ myBot.addTriggers([
             delay: 1000 } },
 
     // Query Wolfram Alpha when a message starts with !wolfram
-/*    {    name: 'WolframReply',
+    {    name: 'WolframReply',
         type: 'WolframAlphaTrigger',
         options: {
             command: '!wolfram',
 	    ignore: ignoredUser,
-            appId: 'XXXXXXXXXXXXXX' } },
-*/
+            appId: 'XXXXX' } },
+
 /*    // Post all links from chat to tumblr, and also post things on command
     {    name: 'TumblrTriggerYCJGTFO', type: 'TumblrTrigger',
         options: { autoPost: true, autoPostContext: false, blogName: 'ycjgtfo',
@@ -489,7 +461,7 @@ myBot.addTriggers([
 	    delay: 1,
 	    exact: true,
 	    ignore: ignoredUser,
-            rickrollChance: .1    } },
+            rickrollChance: 0.01    } },
 
         // Query urban dictionary on !ud
         {       name: 'UD',
